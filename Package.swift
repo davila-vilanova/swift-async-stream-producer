@@ -3,7 +3,7 @@
 import PackageDescription
 
 let package = Package(
-  name: "async-stream-producer",
+  name: "swift-async-stream-producer",
   platforms: [
     .iOS(.v14),
     .macOS(.v10_15),
