@@ -23,7 +23,7 @@ public actor AsyncStreamProducer<Element: Sendable> {
     self.currentValue = initialValue
     if let nextValueProducer = nextValue {
       Task {
-        await setCurrentValue(await nextValueProducer())
+        setCurrentValue(await nextValueProducer())
       }
     }
   }
@@ -35,12 +35,14 @@ public actor AsyncStreamProducer<Element: Sendable> {
   /// the stream.
   ///
   /// - Returns: An `AsyncStreamProducer` that produces values of type `Element`.
-  public func makeAsyncStream() -> AsyncStream<Element> {
+  public nonisolated func makeAsyncStream() -> AsyncStream<Element> {
     AsyncStream { continuation in
       let listener = ValueListener {
         continuation.yield($0)
       }
-      addListener(listener)
+      Task {
+        await addListener(listener)
+      }
       continuation.onTermination = { @Sendable [weak self] _ in
         Task { [self] in
           await self?.removeListener(listener)
@@ -51,15 +53,22 @@ public actor AsyncStreamProducer<Element: Sendable> {
 
   /// Sets a value in this producer, and sends that value via any currently
   /// active streams.
-  //
-  // This is a function instead of a property because only setting is allowed, not getting.
-  public func setCurrentValue(_ newValue: Element) {
-    currentValue = newValue
-    valueListeners.forEach { $0.onValue(newValue) }
+  public nonisolated func setCurrentValue(_ newValue: Element) {
+    Task {
+      await _setCurrentValue(newValue)
+      await valueListeners.forEach { $0.onValue(newValue) }
+    }
   }
 
   /// The current value of this producer.
   private var currentValue: Element?
+
+  /// Sets the current value privately, without notifying any streams.
+  ///
+  /// Use to set the value from a private but non-isolated context.
+  private func _setCurrentValue(_ value: Element) {
+    currentValue = value
+  }
 
   /// The listeners that are currently active, which belong to the streams that
   /// have been produced and are currently active.
