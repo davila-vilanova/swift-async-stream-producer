@@ -61,7 +61,7 @@ public actor AsyncStreamProducer<Element: Sendable> {
   }
 
   /// The current value of this producer.
-  private var currentValue: Element?
+  public private(set) var currentValue: Element?
 
   /// Sets the current value privately, without notifying any streams.
   ///
