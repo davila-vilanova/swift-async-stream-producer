@@ -9,7 +9,7 @@ A micro-framework for iOS that facilitates single producer - multiple consumer a
 Add the following dependency to your `Package.swift` file:
 
 ```swift
-    .package(url: "git@github.com:glooko/swift-async-stream-producer.git", "1.2.0"..<"1.3.0"),
+    .package(url: "https://github.com/davila-vilanova/swift-async-stream-producer", "1.2.2"..<"1.3.0"),
 ```
 
 And then add the product to any targets that will use it:
